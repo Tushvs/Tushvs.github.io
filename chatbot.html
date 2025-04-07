@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title> Your Workout Coach</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #f1f1f1;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      background-image: url("https://png.pngtree.com/thumb_back/fh260/background/20230901/pngtree-a-beige-coloured-background-that-is-textured-image_13169752.jpg");
+      background-repeat: no-repeat; 
+      background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  min-height: 100vh;
+    }
+
+    h1 {
+      margin-top: 20px;
+      color: #333;
+    }
+
+    #chatBox {
+      width: 90%;
+      max-width: 600px;
+      height: 450px;
+      background: #fff;
+      border-radius: 10px;
+      border: 1px solid #ccc;
+      padding: 20px;
+      overflow-y: scroll;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      margin-top: 20px;
+    }
+
+    .message {
+      margin: 10px 0;
+      padding: 10px 15px;
+      border-radius: 20px;
+      max-width: 75%;
+      word-wrap: break-word;
+      display: inline-block;
+      font-size: 15px;
+      line-height: 1.4;
+    }
+
+    .user {
+      background-color: #007bff;
+      color: white;
+      align-self: flex-end;
+      margin-left: auto;
+      text-align: right;
+    }
+
+    .bot {
+      background-color: #e4e6eb;
+      color: #333;
+      align-self: flex-start;
+      margin-right: auto;
+    }
+
+    #inputArea {
+      display: flex;
+      justify-content: center;
+      margin-top: 20px;
+      width: 90%;
+      max-width: 600px;
+    }
+
+    #userInput {
+      flex-grow: 1;
+      padding: 12px 15px;
+      font-size: 15px;
+      border: 1px solid #ccc;
+      border-radius: 25px;
+      outline: none;
+      margin-right: 10px;
+    }
+
+    button {
+      padding: 12px 20px;
+      font-size: 15px;
+      border: none;
+      background-color: #007bff;
+      color: white;
+      border-radius: 25px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+
+    button:hover {
+      background-color: #0056b3;
+    }
+  </style>
+</head>
+<body>
+  <h1>Your Workout Coach 🤖</h1>
+  
+  <div id="chatBox"></div>
+
+  <div id="inputArea">
+    <input id="userInput" type="text" placeholder="Type your message..." />
+    <button onclick="sendMessage()">Send</button>
+  </div>
+
+  <script>
+    const API_KEY = "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"; // Replace with your real key
+    const MODEL = "mistralai/mistral-7b-instruct";
+
+    async function sendMessage() {
+      const input = document.getElementById('userInput');
+      const chatBox = document.getElementById('chatBox');
+      const message = input.value.trim();
+      if (!message) return;
+
+      const userMsg = document.createElement('div');
+      userMsg.className = 'message user';
+      userMsg.textContent = message;
+      chatBox.appendChild(userMsg);
+      input.value = '';
+
+      const botMsg = document.createElement('div');
+      botMsg.className = 'message bot';
+      botMsg.textContent = 'Typing...';
+      chatBox.appendChild(botMsg);
+      chatBox.scrollTop = chatBox.scrollHeight;
+
+      try {
+        const res = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${API_KEY}`,
+            'HTTP-Referer': 'http://localhost',
+            'X-Title': 'AbhayChatBot'
+          },
+          body: JSON.stringify({
+            model: MODEL,
+            messages: [{ role: 'user', content: message }],
+          }),
+        });
+
+        const data = await res.json();
+        console.log("API response:", data);
+
+        const reply = data.choices?.[0]?.message?.content?.trim() || 'No reply';
+        botMsg.textContent = reply;
+        chatBox.scrollTop = chatBox.scrollHeight;
+      } catch (err) {
+        botMsg.textContent = "❌ Error: Could not fetch response.";
+        console.error(err);
+      }
+    }
+  </script>
+</body>
+</html>
